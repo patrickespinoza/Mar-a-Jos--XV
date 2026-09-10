@@ -1,75 +1,116 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
-import { Camera, Sparkles } from "lucide-react";
+import {
+  Camera,
+  Heart,
+  Leaf,
+  Sparkles,
+} from "lucide-react";
 
 const Carousel = () => {
   const images = [
     {
-      src: "/carrusel01.png",
+      src: "/Carrusel01.jpeg",
       alt: "Fotografía especial 1",
       position: "center",
     },
     {
-      src: "/carrusel02.png",
+      src: "/Carrusel02.jpeg",
       alt: "Fotografía especial 2",
       position: "center",
     },
     {
-      src: "/carrusel03.png",
+      src: "/Carrusel03.jpeg",
       alt: "Fotografía especial 3",
       position: "center",
     },
     {
-      src: "/carrusel04.png",
+      src: "/Carrusel04.jpeg",
       alt: "Fotografía especial 4",
+      position: "center",
+    },
+    {
+      src: "/Carrusel05.jpeg",
+      alt: "Fotografía especial 5",
       position: "center",
     },
   ];
 
   const [index, setIndex] = useState(0);
   const [pausado, setPausado] = useState(false);
+  const pausaTimeout = useRef(null);
 
+  /* Precargar todas las fotografías */
+  useEffect(() => {
+    images.forEach(({ src }) => {
+      const imagen = new Image();
+      imagen.src = src;
+    });
+  }, []);
+
+  /* Cambio automático */
   useEffect(() => {
     if (pausado) return undefined;
 
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % images.length);
+    const intervalo = window.setInterval(() => {
+      setIndex((anterior) => {
+        return (anterior + 1) % images.length;
+      });
     }, 4500);
 
-    return () => clearInterval(interval);
-  }, [images.length, pausado]);
+    return () => window.clearInterval(intervalo);
+  }, [pausado, images.length]);
+
+  /* Limpiar temporizador al desmontar */
+  useEffect(() => {
+    return () => {
+      if (pausaTimeout.current) {
+        window.clearTimeout(pausaTimeout.current);
+      }
+    };
+  }, []);
+
+  const pausarTemporalmente = () => {
+    setPausado(true);
+
+    if (pausaTimeout.current) {
+      window.clearTimeout(pausaTimeout.current);
+    }
+
+    pausaTimeout.current = window.setTimeout(() => {
+      setPausado(false);
+    }, 7000);
+  };
 
   const nextImage = () => {
-    setIndex((prev) => (prev + 1) % images.length);
+    setIndex((anterior) => {
+      return (anterior + 1) % images.length;
+    });
+
     pausarTemporalmente();
   };
 
   const prevImage = () => {
-    setIndex(
-      (prev) => (prev - 1 + images.length) % images.length
-    );
+    setIndex((anterior) => {
+      return (
+        (anterior - 1 + images.length) % images.length
+      );
+    });
+
     pausarTemporalmente();
   };
 
   const seleccionarImagen = (nuevoIndex) => {
     setIndex(nuevoIndex);
     pausarTemporalmente();
-  };
-
-  const pausarTemporalmente = () => {
-    setPausado(true);
-
-    window.clearTimeout(
-      window.__carouselXVTimeout
-    );
-
-    window.__carouselXVTimeout = window.setTimeout(() => {
-      setPausado(false);
-    }, 7000);
   };
 
   const imagenActual = images[index];
@@ -82,98 +123,238 @@ const Carousel = () => {
         isolate
         w-full
         overflow-hidden
-        bg-gradient-to-b
-        from-[#E8DFF2]
-        via-[#FFFFFF]
-        to-[#F5EBDD]
+        bg-[#FFF9F4]
         px-4
         py-20
         sm:px-6
-        sm:py-28
+        sm:py-24
+        md:py-28
       "
     >
-      {/* LUCES DE FONDO */}
+      {/* Fondos decorativos */}
       <div
         className="
-          carouselXV__luz-superior
           pointer-events-none
           absolute
           -left-28
-          -top-32
-          h-[400px]
-          w-[400px]
+          top-28
+          h-72
+          w-72
           rounded-full
-          bg-[#C8B6E2]/45
-          blur-[110px]
+          bg-[#E9B7C7]/20
+          blur-3xl
         "
       />
 
       <div
         className="
-          carouselXV__luz-inferior
           pointer-events-none
           absolute
-          -bottom-32
+          -bottom-24
           -right-24
-          h-[420px]
-          w-[420px]
+          h-80
+          w-80
           rounded-full
-          bg-[#5D4E8C]/20
-          blur-[120px]
+          bg-[#B9A2D8]/20
+          blur-3xl
         "
       />
 
-      {/* DESTELLOS */}
+      {/* Ramas superiores */}
       <motion.div
         className="
-          carouselXV__destello-izquierdo
           pointer-events-none
           absolute
-          left-[7%]
-          top-24
-          text-[#5D4E8C]/40
+          -left-5
+          top-6
+          flex
+          -rotate-[28deg]
+          text-[#7F9275]
+          opacity-80
         "
-        animate={{
-          opacity: [0.25, 1, 0.25],
-          scale: [0.8, 1.2, 0.8],
-          rotate: [0, 20, 0],
+        initial={{
+          opacity: 0,
+          x: -35,
+        }}
+        whileInView={{
+          opacity: 0.8,
+          x: 0,
         }}
         transition={{
-          duration: 3.4,
-          repeat: Infinity,
-          ease: "easeInOut",
+          duration: 1,
+        }}
+        viewport={{
+          once: true,
         }}
       >
-        <Sparkles size={30} strokeWidth={1.2} />
+        <Leaf size={64} strokeWidth={1.1} />
+
+        <Leaf
+          size={44}
+          strokeWidth={1.1}
+          className="-ml-5 mt-10 rotate-45"
+        />
+
+        <Leaf
+          size={34}
+          strokeWidth={1.1}
+          className="-ml-5 mt-20 rotate-90"
+        />
       </motion.div>
 
       <motion.div
         className="
-          carouselXV__destello-derecho
           pointer-events-none
           absolute
-          right-[8%]
-          top-1/3
-          text-[#C8B6E2]
+          -right-5
+          top-8
+          flex
+          rotate-[28deg]
+          text-[#7F9275]
+          opacity-80
+        "
+        initial={{
+          opacity: 0,
+          x: 35,
+        }}
+        whileInView={{
+          opacity: 0.8,
+          x: 0,
+        }}
+        transition={{
+          duration: 1,
+        }}
+        viewport={{
+          once: true,
+        }}
+      >
+        <Leaf
+          size={34}
+          strokeWidth={1.1}
+          className="mt-20 rotate-90"
+        />
+
+        <Leaf
+          size={44}
+          strokeWidth={1.1}
+          className="-ml-5 mt-10 rotate-45"
+        />
+
+        <Leaf
+          size={64}
+          strokeWidth={1.1}
+          className="-ml-5"
+        />
+      </motion.div>
+
+      {/* Hojas laterales */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          left-1
+          top-[45%]
+          hidden
+          -rotate-[18deg]
+          flex-col
+          text-[#7F9275]
+          opacity-55
+          md:flex
+        "
+      >
+        <Leaf size={52} strokeWidth={1} />
+
+        <Leaf
+          size={40}
+          strokeWidth={1}
+          className="-mt-3 ml-6 rotate-45"
+        />
+
+        <Leaf
+          size={48}
+          strokeWidth={1}
+          className="-mt-2 rotate-12"
+        />
+      </div>
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          right-1
+          top-[48%]
+          hidden
+          rotate-[18deg]
+          flex-col
+          items-end
+          text-[#7F9275]
+          opacity-55
+          md:flex
+        "
+      >
+        <Leaf size={52} strokeWidth={1} />
+
+        <Leaf
+          size={40}
+          strokeWidth={1}
+          className="-mt-3 mr-6 rotate-45"
+        />
+
+        <Leaf
+          size={48}
+          strokeWidth={1}
+          className="-mt-2 rotate-12"
+        />
+      </div>
+
+      {/* Destellos */}
+      <motion.div
+        className="
+          pointer-events-none
+          absolute
+          left-[10%]
+          top-[28%]
+          text-[#C9C9CF]
+        "
+        animate={{
+          opacity: [0.25, 1, 0.25],
+          scale: [0.8, 1.15, 0.8],
+          rotate: [0, 20, 0],
+        }}
+        transition={{
+          duration: 3.2,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      >
+        <Sparkles size={26} strokeWidth={1.2} />
+      </motion.div>
+
+      <motion.div
+        className="
+          pointer-events-none
+          absolute
+          right-[9%]
+          top-[38%]
+          text-[#C98DA3]
         "
         animate={{
           opacity: [0.2, 0.9, 0.2],
-          scale: [0.7, 1.15, 0.7],
+          scale: [0.75, 1.1, 0.75],
           rotate: [0, -20, 0],
         }}
         transition={{
-          duration: 4,
+          duration: 3.8,
           repeat: Infinity,
           ease: "easeInOut",
           delay: 0.5,
         }}
       >
-        <Sparkles size={38} strokeWidth={1.1} />
+        <Sparkles size={30} strokeWidth={1.1} />
       </motion.div>
 
       <motion.div
         className="
-          carouselXV__contenedor
           relative
           z-10
           mx-auto
@@ -181,7 +362,7 @@ const Carousel = () => {
         "
         initial={{
           opacity: 0,
-          y: 55,
+          y: 45,
         }}
         whileInView={{
           opacity: 1,
@@ -193,56 +374,99 @@ const Carousel = () => {
         }}
         viewport={{
           once: true,
-          amount: 0.2,
+          amount: 0.15,
         }}
       >
-        {/* ENCABEZADO */}
-        <div
-          className="
-            carouselXV__encabezado
-            mb-12
-            text-center
-          "
-        >
-          <motion.div
-            className="
-              carouselXV__icono
-              mx-auto
-              mb-5
-              flex
-              h-16
-              w-16
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-[#5D4E8C]/15
-              bg-white/75
-              text-[#5D4E8C]
-              shadow-[0_12px_30px_rgba(93,78,140,0.15)]
-              backdrop-blur-md
-            "
-            animate={{
-              y: [0, -5, 0],
-            }}
-            transition={{
-              duration: 3.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            <Camera size={29} strokeWidth={1.4} />
-          </motion.div>
+        {/* Encabezado */}
+        <div className="mb-12 text-center">
+          <div className="relative inline-block">
+            <div
+              className="
+                pointer-events-none
+                absolute
+                -left-16
+                top-1/2
+                flex
+                -translate-y-1/2
+                -rotate-[25deg]
+                text-[#7F9275]
+                opacity-75
+                sm:-left-24
+              "
+            >
+              <Leaf size={42} strokeWidth={1.1} />
+
+              <Leaf
+                size={29}
+                strokeWidth={1.1}
+                className="-ml-3 mt-7 rotate-45"
+              />
+            </div>
+
+            <motion.div
+              className="
+                mx-auto
+                flex
+                h-16
+                w-16
+                items-center
+                justify-center
+                rounded-full
+                border
+                border-[#C9C9CF]
+                bg-[#EEE7F5]
+                text-[#6F568F]
+                shadow-[0_12px_30px_rgba(111,86,143,0.14)]
+              "
+              animate={{
+                y: [0, -5, 0],
+              }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              <Camera size={29} strokeWidth={1.35} />
+            </motion.div>
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                -right-16
+                top-1/2
+                flex
+                -translate-y-1/2
+                rotate-[25deg]
+                text-[#7F9275]
+                opacity-75
+                sm:-right-24
+              "
+            >
+              <Leaf
+                size={29}
+                strokeWidth={1.1}
+                className="mt-7 rotate-45"
+              />
+
+              <Leaf
+                size={42}
+                strokeWidth={1.1}
+                className="-ml-3"
+              />
+            </div>
+          </div>
 
           <p
             className="
-              carouselXV__etiqueta
+              mt-5
               font-playfair
               text-xs
               font-semibold
               uppercase
               tracking-[0.38em]
-              text-[#5D4E8C]/65
+              text-[#7F9275]
               sm:text-sm
             "
           >
@@ -251,14 +475,13 @@ const Carousel = () => {
 
           <h2
             className="
-              carouselXV__titulo
-              mt-4
+              mt-3
               font-cursiveDancing
-              text-5xl
+              text-6xl
               leading-none
-              text-[#5D4E8C]
-              sm:text-6xl
-              md:text-7xl
+              text-[#6F568F]
+              sm:text-7xl
+              md:text-8xl
             "
           >
             Mis Momentos
@@ -266,9 +489,8 @@ const Carousel = () => {
 
           <div
             className="
-              carouselXV__separador
               mx-auto
-              mt-7
+              mt-6
               flex
               items-center
               justify-center
@@ -279,26 +501,22 @@ const Carousel = () => {
               className="
                 h-px
                 w-16
-                bg-gradient-to-r
-                from-transparent
-                to-[#5D4E8C]/45
+                bg-[#C9C9CF]
                 sm:w-24
               "
             />
 
-            <Sparkles
+            <Heart
               size={18}
               strokeWidth={1.3}
-              className="text-[#5D4E8C]"
+              className="fill-[#E9B7C7]/35 text-[#C98DA3]"
             />
 
             <span
               className="
                 h-px
                 w-16
-                bg-gradient-to-l
-                from-transparent
-                to-[#5D4E8C]/45
+                bg-[#C9C9CF]
                 sm:w-24
               "
             />
@@ -306,14 +524,13 @@ const Carousel = () => {
 
           <p
             className="
-              carouselXV__descripcion
               mx-auto
               mt-6
               max-w-2xl
               font-playfair
               text-base
               leading-relaxed
-              text-[#2E2E2E]/65
+              text-[#554B5E]/80
               sm:text-lg
             "
           >
@@ -322,35 +539,137 @@ const Carousel = () => {
           </p>
         </div>
 
-        {/* TARJETA PRINCIPAL */}
+        {/* Marco general */}
         <div
           className="
-            carouselXV__tarjeta
             relative
             mx-auto
             max-w-5xl
-            overflow-hidden
             rounded-[2rem]
             border
-            border-white/80
-            bg-white/70
+            border-[#C9C9CF]
+            bg-[#FFFDFC]
             p-3
-            shadow-[0_30px_90px_rgba(93,78,140,0.2)]
-            backdrop-blur-xl
+            shadow-[0_28px_75px_rgba(111,86,143,0.18)]
             sm:rounded-[2.8rem]
             sm:p-5
           "
         >
-          {/* VISOR */}
+          {/* Marco interior rosa */}
           <div
             className="
-              carouselXV__visor
+              pointer-events-none
+              absolute
+              inset-1.5
+              rounded-[1.7rem]
+              border
+              border-[#E9B7C7]/55
+              sm:rounded-[2.45rem]
+            "
+          />
+
+          {/* Hojas del marco */}
+          <div
+            className="
+              pointer-events-none
+              absolute
+              -left-6
+              -top-8
+              z-30
+              flex
+              -rotate-[32deg]
+              text-[#7F9275]
+            "
+          >
+            <Leaf size={64} strokeWidth={1.15} />
+
+            <Leaf
+              size={42}
+              strokeWidth={1.15}
+              className="-ml-5 mt-10 rotate-45"
+            />
+          </div>
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              -right-6
+              -top-8
+              z-30
+              flex
+              rotate-[32deg]
+              text-[#7F9275]
+            "
+          >
+            <Leaf
+              size={42}
+              strokeWidth={1.15}
+              className="mt-10 rotate-45"
+            />
+
+            <Leaf
+              size={64}
+              strokeWidth={1.15}
+              className="-ml-5"
+            />
+          </div>
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              -bottom-7
+              -left-5
+              z-30
+              flex
+              rotate-[30deg]
+              text-[#7F9275]
+            "
+          >
+            <Leaf size={68} strokeWidth={1.1} />
+
+            <Leaf
+              size={44}
+              strokeWidth={1.1}
+              className="-ml-5 mt-10 rotate-45"
+            />
+          </div>
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              -bottom-7
+              -right-5
+              z-30
+              flex
+              -rotate-[30deg]
+              text-[#7F9275]
+            "
+          >
+            <Leaf
+              size={44}
+              strokeWidth={1.1}
+              className="mt-10 rotate-45"
+            />
+
+            <Leaf
+              size={68}
+              strokeWidth={1.1}
+              className="-ml-5"
+            />
+          </div>
+
+          {/* Visor */}
+          <div
+            className="
               relative
               h-[520px]
               w-full
               overflow-hidden
               rounded-[1.5rem]
-              bg-[#DDD4E8]
+              bg-[#EEE7F5]
               sm:h-[650px]
               sm:rounded-[2.2rem]
               md:h-[720px]
@@ -361,14 +680,10 @@ const Carousel = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={index}
-                className="
-                  carouselXV__imagen-contenedor
-                  absolute
-                  inset-0
-                "
+                className="absolute inset-0"
                 initial={{
                   opacity: 0,
-                  scale: 1.03,
+                  scale: 1.02,
                 }}
                 animate={{
                   opacity: 1,
@@ -379,24 +694,23 @@ const Carousel = () => {
                   scale: 0.98,
                 }}
                 transition={{
-                  duration: 0.75,
+                  duration: 0.65,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                {/* FONDO DESENFOCADO */}
+                {/* Fondo desenfocado */}
                 <img
                   src={imagenActual.src}
                   alt=""
                   aria-hidden="true"
                   className="
-                    carouselXV__imagen-fondo
                     absolute
                     inset-0
                     h-full
                     w-full
                     scale-110
                     object-cover
-                    opacity-45
+                    opacity-40
                     blur-2xl
                   "
                   style={{
@@ -404,25 +718,19 @@ const Carousel = () => {
                   }}
                 />
 
-                {/* OVERLAY DEL FONDO */}
                 <div
                   className="
-                    carouselXV__imagen-overlay
                     absolute
                     inset-0
-                    bg-gradient-to-b
-                    from-[#5D4E8C]/15
-                    via-black/5
-                    to-[#2E2E2E]/25
+                    bg-[#6F568F]/10
                   "
                 />
 
-                {/* IMAGEN COMPLETA */}
+                {/* Fotografía completa */}
                 <motion.img
                   src={imagenActual.src}
                   alt={imagenActual.alt}
                   className="
-                    carouselXV__imagen-principal
                     relative
                     z-10
                     h-full
@@ -433,7 +741,7 @@ const Carousel = () => {
                     objectPosition: imagenActual.position,
                   }}
                   initial={{
-                    scale: 1.025,
+                    scale: 1.02,
                   }}
                   animate={{
                     scale: 1,
@@ -446,55 +754,22 @@ const Carousel = () => {
               </motion.div>
             </AnimatePresence>
 
-            {/* SOMBRA SUPERIOR */}
+            {/* Contador */}
             <div
               className="
-                carouselXV__sombra-superior
-                pointer-events-none
-                absolute
-                inset-x-0
-                top-0
-                z-20
-                h-28
-                bg-gradient-to-b
-                from-black/30
-                to-transparent
-              "
-            />
-
-            {/* SOMBRA INFERIOR */}
-            <div
-              className="
-                carouselXV__sombra-inferior
-                pointer-events-none
-                absolute
-                inset-x-0
-                bottom-0
-                z-20
-                h-32
-                bg-gradient-to-t
-                from-black/45
-                to-transparent
-              "
-            />
-
-            {/* CONTADOR */}
-            <div
-              className="
-                carouselXV__contador
                 absolute
                 right-4
                 top-4
                 z-30
                 rounded-full
                 border
-                border-white/30
-                bg-[#2E2E2E]/35
+                border-white/60
+                bg-[#6F568F]/85
                 px-4
                 py-2
                 font-playfair
                 text-sm
-                tracking-[0.15em]
+                tracking-[0.12em]
                 text-white
                 shadow-lg
                 backdrop-blur-md
@@ -503,17 +778,20 @@ const Carousel = () => {
               "
             >
               {String(index + 1).padStart(2, "0")}
-              <span className="mx-2 text-white/50">/</span>
+
+              <span className="mx-2 text-white/55">
+                /
+              </span>
+
               {String(images.length).padStart(2, "0")}
             </div>
 
-            {/* BOTÓN IZQUIERDO */}
+            {/* Flecha izquierda */}
             <motion.button
               type="button"
               onClick={prevImage}
               aria-label="Ver fotografía anterior"
               className="
-                carouselXV__boton-anterior
                 absolute
                 left-3
                 top-1/2
@@ -526,17 +804,14 @@ const Carousel = () => {
                 justify-center
                 rounded-full
                 border
-                border-white/35
-                bg-[#5D4E8C]/85
+                border-white/65
+                bg-[#6F568F]/90
                 text-white
-                shadow-[0_10px_30px_rgba(46,46,46,0.25)]
+                shadow-[0_10px_25px_rgba(43,31,57,0.25)]
                 backdrop-blur-md
-                transition
-                duration-300
-                hover:bg-[#4B3E76]
                 sm:left-6
-                sm:h-13
-                sm:w-13
+                sm:h-12
+                sm:w-12
               "
               whileHover={{
                 scale: 1.1,
@@ -548,13 +823,12 @@ const Carousel = () => {
               <FaChevronLeft size={18} />
             </motion.button>
 
-            {/* BOTÓN DERECHO */}
+            {/* Flecha derecha */}
             <motion.button
               type="button"
               onClick={nextImage}
               aria-label="Ver fotografía siguiente"
               className="
-                carouselXV__boton-siguiente
                 absolute
                 right-3
                 top-1/2
@@ -567,17 +841,14 @@ const Carousel = () => {
                 justify-center
                 rounded-full
                 border
-                border-white/35
-                bg-[#5D4E8C]/85
+                border-white/65
+                bg-[#6F568F]/90
                 text-white
-                shadow-[0_10px_30px_rgba(46,46,46,0.25)]
+                shadow-[0_10px_25px_rgba(43,31,57,0.25)]
                 backdrop-blur-md
-                transition
-                duration-300
-                hover:bg-[#4B3E76]
                 sm:right-6
-                sm:h-13
-                sm:w-13
+                sm:h-12
+                sm:w-12
               "
               whileHover={{
                 scale: 1.1,
@@ -588,18 +859,26 @@ const Carousel = () => {
             >
               <FaChevronRight size={18} />
             </motion.button>
+          </div>
 
-            {/* INDICADORES INFERIORES */}
+          {/* Controles inferiores */}
+          <div
+            className="
+              relative
+              z-20
+              flex
+              flex-col
+              items-center
+              px-3
+              pb-3
+              pt-6
+            "
+          >
             <div
               className="
-                carouselXV__indicadores
-                absolute
-                bottom-5
-                left-1/2
-                z-30
                 flex
-                -translate-x-1/2
                 items-center
+                justify-center
                 gap-2
               "
             >
@@ -609,125 +888,123 @@ const Carousel = () => {
                   type="button"
                   onClick={() => seleccionarImagen(i)}
                   aria-label={`Ver fotografía ${i + 1}`}
-                  className="flex items-center justify-center"
+                  className="
+                    flex
+                    h-6
+                    items-center
+                    justify-center
+                  "
                 >
                   <motion.span
                     animate={{
-                      width: index === i ? 34 : 9,
-                      opacity: index === i ? 1 : 0.6,
+                      width: index === i ? 32 : 9,
+                      opacity: index === i ? 1 : 0.4,
                     }}
                     transition={{
                       duration: 0.3,
                     }}
-                    className="
+                    className={`
                       block
                       h-2
                       rounded-full
-                      bg-white
-                      shadow
-                    "
+                      ${
+                        index === i
+                          ? "bg-[#6F568F]"
+                          : "bg-[#C9C9CF]"
+                      }
+                    `}
                   />
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* MINIATURAS */}
+            <p
+              className="
+                mt-2
+                font-playfair
+                text-xs
+                uppercase
+                tracking-[0.22em]
+                text-[#C98DA3]
+              "
+            >
+              {index + 1} / {images.length}
+            </p>
+          </div>
+        </div>
+
+        {/* Hojas y separador inferior */}
+        <div
+          className="
+            mx-auto
+            mt-12
+            flex
+            items-center
+            justify-center
+          "
+        >
           <div
             className="
-              carouselXV__miniaturas
-              mt-4
               flex
-              gap-3
-              overflow-x-auto
-              px-1
-              pb-2
-              pt-1
-              sm:mt-5
-              sm:justify-center
+              items-center
+              -rotate-[15deg]
+              text-[#7F9275]
             "
           >
-            {images.map((imagen, i) => (
-              <motion.button
-                key={imagen.src}
-                type="button"
-                onClick={() => seleccionarImagen(i)}
-                aria-label={`Seleccionar fotografía ${i + 1}`}
-                className={`
-                  carouselXV__miniatura
-                  relative
-                  h-20
-                  min-w-[64px]
-                  overflow-hidden
-                  rounded-2xl
-                  border-2
-                  bg-[#E8DFF2]
-                  shadow-md
-                  transition
-                  duration-300
-                  sm:h-24
-                  sm:min-w-[76px]
-                  ${
-                    index === i
-                      ? "border-[#5D4E8C] opacity-100"
-                      : "border-white opacity-60 hover:opacity-100"
-                  }
-                `}
-                whileHover={{
-                  y: -4,
-                }}
-                whileTap={{
-                  scale: 0.96,
-                }}
-              >
-                <img
-                  src={imagen.src}
-                  alt=""
-                  className="
-                    carouselXV__miniatura-imagen
-                    h-full
-                    w-full
-                    object-cover
-                  "
-                  style={{
-                    objectPosition: imagen.position,
-                  }}
-                />
+            <Leaf size={42} strokeWidth={1.1} />
 
-                {index === i && (
-                  <motion.div
-                    layoutId="miniaturaActiva"
-                    className="
-                      carouselXV__miniatura-activa
-                      absolute
-                      inset-0
-                      bg-[#5D4E8C]/10
-                    "
-                  />
-                )}
+            <Leaf
+              size={29}
+              strokeWidth={1.1}
+              className="-ml-3 mt-5 rotate-45"
+            />
+          </div>
 
-                <span
-                  className="
-                    carouselXV__miniatura-numero
-                    absolute
-                    bottom-1
-                    right-1
-                    flex
-                    h-5
-                    w-5
-                    items-center
-                    justify-center
-                    rounded-full
-                    bg-[#5D4E8C]/85
-                    text-[10px]
-                    text-white
-                    backdrop-blur-sm
-                  "
-                >
-                  {i + 1}
-                </span>
-              </motion.button>
-            ))}
+          <span
+            className="
+              mx-3
+              h-px
+              w-10
+              bg-[#C9C9CF]
+              sm:w-20
+            "
+          />
+
+          <Sparkles
+            size={18}
+            strokeWidth={1.2}
+            className="text-[#C98DA3]"
+          />
+
+          <span
+            className="
+              mx-3
+              h-px
+              w-10
+              bg-[#C9C9CF]
+              sm:w-20
+            "
+          />
+
+          <div
+            className="
+              flex
+              items-center
+              rotate-[15deg]
+              text-[#7F9275]
+            "
+          >
+            <Leaf
+              size={29}
+              strokeWidth={1.1}
+              className="mt-5 rotate-45"
+            />
+
+            <Leaf
+              size={42}
+              strokeWidth={1.1}
+              className="-ml-3"
+            />
           </div>
         </div>
       </motion.div>

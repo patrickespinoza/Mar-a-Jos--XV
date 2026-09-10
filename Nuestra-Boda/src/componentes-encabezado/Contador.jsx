@@ -1,49 +1,56 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Crown, Sparkles } from "lucide-react";
+import { Heart, Leaf, Sparkles } from "lucide-react";
 
 const Contador = ({
-  titulo = "¡Estás invitado!",
+  titulo = "Faltan",
   texto = "Hay momentos que se sueñan toda la vida, y para mí será muy especial compartir este día contigo.",
   frase = "La magia está por comenzar",
-  fecha = "2027-07-11T00:00:00",
+  fecha = "2026-10-30T19:30:00",
 }) => {
   const calcularTiempo = () => {
-    const diferencia = new Date(fecha).getTime() - new Date().getTime();
+    const diferencia = new Date(fecha).getTime() - Date.now();
 
-    if (diferencia > 0) {
+    if (diferencia <= 0) {
       return {
-        Días: Math.floor(diferencia / (1000 * 60 * 60 * 24)),
-        Horas: Math.floor(
-          (diferencia / (1000 * 60 * 60)) % 24
-        ),
-        Minutos: Math.floor(
-          (diferencia / (1000 * 60)) % 60
-        ),
-        Segundos: Math.floor(
-          (diferencia / 1000) % 60
-        ),
+        Días: 0,
+        Horas: 0,
+        Minutos: 0,
+        Segundos: 0,
       };
     }
 
     return {
-      Días: 0,
-      Horas: 0,
-      Minutos: 0,
-      Segundos: 0,
+      Días: Math.floor(diferencia / (1000 * 60 * 60 * 24)),
+      Horas: Math.floor(
+        (diferencia / (1000 * 60 * 60)) % 24
+      ),
+      Minutos: Math.floor(
+        (diferencia / (1000 * 60)) % 60
+      ),
+      Segundos: Math.floor(
+        (diferencia / 1000) % 60
+      ),
     };
   };
 
   const [tiempoRestante, setTiempoRestante] = useState(
-    calcularTiempo()
+    calcularTiempo
   );
 
   useEffect(() => {
-    const temporizador = setInterval(() => {
+    const actualizarContador = () => {
       setTiempoRestante(calcularTiempo());
-    }, 1000);
+    };
 
-    return () => clearInterval(temporizador);
+    actualizarContador();
+
+    const temporizador = window.setInterval(
+      actualizarContador,
+      1000
+    );
+
+    return () => window.clearInterval(temporizador);
   }, [fecha]);
 
   const elementosContador = Object.entries(tiempoRestante);
@@ -55,79 +62,139 @@ const Contador = ({
         relative
         isolate
         overflow-hidden
-        bg-gradient-to-b
-        from-[#5D4E8C]
-        via-[#7765A6]
-        to-[#C8B6E2]
-        px-5
-        py-24
+        bg-[#FFF9F4]
+        px-4
+        py-20
         sm:px-8
-        sm:py-28
+        sm:py-24
+        md:py-28
       "
     >
-      {/* LUZ SUPERIOR */}
+      {/* Círculos decorativos */}
       <div
         className="
-          contadorXV__luz-superior
           pointer-events-none
           absolute
-          -left-32
-          -top-32
-          h-[420px]
-          w-[420px]
+          -left-24
+          top-16
+          h-64
+          w-64
           rounded-full
-          bg-[#F5EBDD]/20
-          blur-[90px]
+          bg-[#E9B7C7]/20
+          blur-3xl
         "
       />
 
-      {/* LUZ INFERIOR */}
       <div
         className="
-          contadorXV__luz-inferior
           pointer-events-none
           absolute
-          -bottom-40
-          -right-28
-          h-[430px]
-          w-[430px]
+          -right-24
+          bottom-10
+          h-72
+          w-72
           rounded-full
-          bg-white/20
-          blur-[100px]
+          bg-[#B9A2D8]/20
+          blur-3xl
         "
       />
 
-      {/* CÍRCULO DECORATIVO */}
-      <div
-        className="
-          contadorXV__circulo-decorativo
-          pointer-events-none
-          absolute
-          left-1/2
-          top-1/2
-          h-[520px]
-          w-[520px]
-          -translate-x-1/2
-          -translate-y-1/2
-          rounded-full
-          border
-          border-white/10
-        "
-      />
-
-      {/* DESTELLOS */}
+      {/* Hojas superiores */}
       <motion.div
         className="
-          contadorXV__destello-izquierdo
+          pointer-events-none
           absolute
-          left-[7%]
-          top-20
-          text-[#F5EBDD]/80
+          -left-3
+          top-5
+          flex
+          -rotate-[28deg]
+          text-[#7F9275]
+          opacity-75
+        "
+        initial={{ opacity: 0, x: -30, rotate: -40 }}
+        whileInView={{ opacity: 0.75, x: 0, rotate: -28 }}
+        transition={{ duration: 1 }}
+        viewport={{ once: true }}
+      >
+        <Leaf size={52} strokeWidth={1.1} />
+        <Leaf
+          size={37}
+          strokeWidth={1.1}
+          className="-ml-4 mt-8 rotate-45"
+        />
+      </motion.div>
+
+      <motion.div
+        className="
+          pointer-events-none
+          absolute
+          -right-2
+          top-8
+          flex
+          rotate-[25deg]
+          text-[#7F9275]
+          opacity-75
+        "
+        initial={{ opacity: 0, x: 30, rotate: 40 }}
+        whileInView={{ opacity: 0.75, x: 0, rotate: 25 }}
+        transition={{ duration: 1 }}
+        viewport={{ once: true }}
+      >
+        <Leaf
+          size={38}
+          strokeWidth={1.1}
+          className="mt-8 rotate-45"
+        />
+
+        <Leaf
+          size={55}
+          strokeWidth={1.1}
+          className="-ml-4"
+        />
+      </motion.div>
+
+      {/* Hojas inferiores */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          -bottom-5
+          -left-5
+          rotate-[35deg]
+          text-[#7F9275]
+          opacity-60
+        "
+      >
+        <Leaf size={68} strokeWidth={1} />
+      </div>
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          -bottom-5
+          -right-5
+          -rotate-[35deg]
+          text-[#7F9275]
+          opacity-60
+        "
+      >
+        <Leaf size={68} strokeWidth={1} />
+      </div>
+
+      {/* Destellos */}
+      <motion.div
+        className="
+          pointer-events-none
+          absolute
+          left-[12%]
+          top-[32%]
+          text-[#C9C9CF]
         "
         animate={{
-          opacity: [0.25, 1, 0.25],
-          scale: [0.8, 1.15, 0.8],
-          rotate: [0, 20, 0],
+          opacity: [0.25, 0.9, 0.25],
+          scale: [0.85, 1.15, 0.85],
+          rotate: [0, 15, 0],
         }}
         transition={{
           duration: 3,
@@ -135,394 +202,387 @@ const Contador = ({
           ease: "easeInOut",
         }}
       >
-        <Sparkles size={30} strokeWidth={1.2} />
+        <Sparkles size={24} strokeWidth={1.2} />
       </motion.div>
 
       <motion.div
         className="
-          contadorXV__destello-derecho
+          pointer-events-none
           absolute
-          right-[8%]
-          top-1/3
-          text-white/75
+          right-[10%]
+          top-[55%]
+          text-[#E9B7C7]
         "
         animate={{
-          opacity: [0.2, 0.9, 0.2],
-          scale: [0.7, 1.1, 0.7],
-          rotate: [0, -20, 0],
+          opacity: [0.25, 1, 0.25],
+          scale: [0.8, 1.1, 0.8],
         }}
         transition={{
-          duration: 3.6,
+          duration: 3.5,
           repeat: Infinity,
           ease: "easeInOut",
-          delay: 0.4,
+          delay: 0.5,
         }}
       >
-        <Sparkles size={38} strokeWidth={1.1} />
+        <Sparkles size={28} strokeWidth={1.2} />
       </motion.div>
 
       <div
         className="
-          contadorXV__contenedor
           relative
           z-10
           mx-auto
           max-w-6xl
         "
       >
-        {/* ENCABEZADO */}
-        <motion.div
+        {/* Marco exterior */}
+        <div
           className="
-            contadorXV__encabezado
-            mx-auto
-            max-w-4xl
-            text-center
-          "
-          initial={{
-            opacity: 0,
-            y: 35,
-          }}
-          whileInView={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.9,
-            ease: "easeOut",
-          }}
-          viewport={{
-            once: true,
-            amount: 0.35,
-          }}
-        >
-          {/* CORONA */}
-          <motion.div
-            className="
-              contadorXV__corona
-              mx-auto
-              mb-5
-              flex
-              h-16
-              w-16
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-white/30
-              bg-white/10
-              text-[#F5EBDD]
-              shadow-[0_12px_35px_rgba(46,46,46,0.18)]
-              backdrop-blur-md
-            "
-            animate={{
-              y: [0, -5, 0],
-              rotate: [0, 2, 0, -2, 0],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            <Crown size={30} strokeWidth={1.3} />
-          </motion.div>
-
-          {/* ETIQUETA */}
-          <p
-            className="
-              contadorXV__etiqueta
-              mb-4
-              font-playfair
-              text-xs
-              uppercase
-              tracking-[0.42em]
-              text-[#F5EBDD]/85
-              sm:text-sm
-            "
-          >
-            Mis XV años
-          </p>
-
-          {/* TÍTULO */}
-          <h2
-            className="
-              contadorXV__titulo
-              font-cursiveDancing
-              text-5xl
-              leading-tight
-              text-white
-              drop-shadow-[0_6px_18px_rgba(46,46,46,0.25)]
-              sm:text-6xl
-              md:text-7xl
-            "
-          >
-            {titulo}
-          </h2>
-
-          {/* TEXTO */}
-          <p
-            className="
-              contadorXV__texto
-              mx-auto
-              mt-7
-              max-w-3xl
-              font-playfair
-              text-lg
-              leading-relaxed
-              text-white/90
-              sm:text-xl
-              md:text-2xl
-            "
-          >
-            {texto}
-          </p>
-
-          {/* SEPARADOR */}
-          <div
-            className="
-              contadorXV__separador
-              mx-auto
-              my-9
-              flex
-              items-center
-              justify-center
-              gap-3
-            "
-          >
-            <span
-              className="
-                contadorXV__linea-izquierda
-                h-px
-                w-16
-                bg-gradient-to-r
-                from-transparent
-                to-[#F5EBDD]/80
-                sm:w-24
-              "
-            />
-
-            <Sparkles
-              size={20}
-              strokeWidth={1.4}
-              className="text-[#F5EBDD]"
-            />
-
-            <span
-              className="
-                contadorXV__linea-derecha
-                h-px
-                w-16
-                bg-gradient-to-l
-                from-transparent
-                to-[#F5EBDD]/80
-                sm:w-24
-              "
-            />
-          </div>
-
-          {/* FRASE */}
-          <p
-            className="
-              contadorXV__frase
-              font-cursiveDancing
-              text-3xl
-              text-[#F5EBDD]
-              sm:text-4xl
-            "
-          >
-            {frase}
-          </p>
-        </motion.div>
-
-        {/* TARJETA CONTADOR */}
-        <motion.div
-          className="
-            contadorXV__tarjeta
             relative
-            mx-auto
-            mt-14
-            max-w-5xl
-            overflow-hidden
             rounded-[2rem]
             border
-            border-white/35
-            bg-white/15
-            p-5
-            shadow-[0_30px_80px_rgba(48,38,76,0.35)]
-            backdrop-blur-xl
-            sm:p-8
-            md:mt-16
+            border-[#C9C9CF]
+            bg-white/45
+            px-4
+            py-12
+            shadow-[0_20px_60px_rgba(111,86,143,0.10)]
+            sm:px-8
+            sm:py-16
           "
-          initial={{
-            opacity: 0,
-            y: 45,
-            scale: 0.96,
-          }}
-          whileInView={{
-            opacity: 1,
-            y: 0,
-            scale: 1,
-          }}
-          transition={{
-            duration: 0.9,
-            delay: 0.15,
-            ease: "easeOut",
-          }}
-          viewport={{
-            once: true,
-            amount: 0.3,
-          }}
         >
-          {/* BRILLO DE LA TARJETA */}
+          {/* Marco interior */}
           <div
             className="
-              contadorXV__tarjeta-brillo
               pointer-events-none
               absolute
-              -right-16
-              -top-20
-              h-48
-              w-48
-              rounded-full
-              bg-white/25
-              blur-3xl
+              inset-2
+              rounded-[1.65rem]
+              border
+              border-[#E9B7C7]/55
             "
           />
 
-          <div
+          {/* Encabezado */}
+          <motion.div
             className="
-              contadorXV__cuadricula
               relative
-              grid
-              grid-cols-2
-              gap-4
-              sm:grid-cols-4
-              sm:gap-5
+              mx-auto
+              max-w-4xl
+              text-center
             "
+            initial={{
+              opacity: 0,
+              y: 30,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.85,
+              ease: "easeOut",
+            }}
+            viewport={{
+              once: true,
+              amount: 0.3,
+            }}
           >
-            {elementosContador.map(
-              ([etiqueta, valor], indice) => (
-                <motion.div
-                  key={etiqueta}
-                  className="
-                    contadorXV__unidad
-                    group
-                    relative
-                    flex
-                    min-h-[165px]
-                    flex-col
-                    items-center
-                    justify-center
-                    overflow-hidden
-                    rounded-[1.6rem]
-                    border
-                    border-white/55
-                    bg-gradient-to-b
-                    from-white/95
-                    to-[#F5EBDD]/90
-                    px-3
-                    py-6
-                    text-center
-                    shadow-[0_16px_40px_rgba(55,43,88,0.2)]
-                  "
-                  initial={{
-                    opacity: 0,
-                    y: 25,
-                  }}
-                  whileInView={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  transition={{
-                    duration: 0.65,
-                    delay: indice * 0.1,
-                  }}
-                  viewport={{
-                    once: true,
-                  }}
-                  whileHover={{
-                    y: -6,
-                    scale: 1.025,
-                  }}
-                >
-                  {/* BRILLO INTERIOR */}
-                  <div
-                    className="
-                      contadorXV__unidad-brillo
-                      pointer-events-none
-                      absolute
-                      -right-8
-                      -top-8
-                      h-24
-                      w-24
-                      rounded-full
-                      bg-[#C8B6E2]/35
-                      blur-2xl
-                    "
-                  />
+            <p
+              className="
+                mb-3
+                font-playfair
+                text-xs
+                uppercase
+                tracking-[0.4em]
+                text-[#7F9275]
+                sm:text-sm
+              "
+            >
+              Mis XV años
+            </p>
 
-                  {/* NÚMERO */}
-                  <motion.span
-                    key={`${etiqueta}-${valor}`}
+            <h2
+              className="
+                font-cursiveDancing
+                text-6xl
+                leading-none
+                text-[#C98DA3]
+                sm:text-7xl
+                md:text-8xl
+              "
+            >
+              {titulo}
+            </h2>
+
+            {/* Separador */}
+            <div
+              className="
+                mx-auto
+                my-6
+                flex
+                items-center
+                justify-center
+                gap-3
+              "
+            >
+              <span
+                className="
+                  h-px
+                  w-14
+                  bg-[#C9C9CF]
+                  sm:w-24
+                "
+              />
+
+              <Heart
+                size={17}
+                strokeWidth={1.3}
+                className="fill-[#E9B7C7]/35 text-[#C98DA3]"
+              />
+
+              <span
+                className="
+                  h-px
+                  w-14
+                  bg-[#C9C9CF]
+                  sm:w-24
+                "
+              />
+            </div>
+
+            <p
+              className="
+                mx-auto
+                max-w-3xl
+                font-playfair
+                text-base
+                leading-relaxed
+                text-[#554B5E]
+                sm:text-lg
+                md:text-xl
+              "
+            >
+              {texto}
+            </p>
+          </motion.div>
+
+          {/* Contador */}
+          <motion.div
+            className="
+              relative
+              mx-auto
+              mt-10
+              max-w-5xl
+              sm:mt-12
+            "
+            initial={{
+              opacity: 0,
+              y: 35,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.8,
+              delay: 0.15,
+              ease: "easeOut",
+            }}
+            viewport={{
+              once: true,
+              amount: 0.25,
+            }}
+          >
+            <div
+              className="
+                grid
+                grid-cols-2
+                gap-3
+                sm:grid-cols-4
+                sm:gap-4
+                md:gap-6
+              "
+            >
+              {elementosContador.map(
+                ([etiqueta, valor], indice) => (
+                  <motion.div
+                    key={etiqueta}
                     className="
-                      contadorXV__numero
+                      group
                       relative
-                      font-playfair
-                      text-4xl
-                      font-semibold
-                      tabular-nums
-                      text-[#5D4E8C]
-                      sm:text-5xl
+                      flex
+                      min-h-[140px]
+                      flex-col
+                      items-center
+                      justify-center
+                      overflow-hidden
+                      rounded-[1.25rem]
+                      border
+                      border-[#C9C9CF]
+                      bg-[#FFFDFC]
+                      px-2
+                      py-5
+                      text-center
+                      shadow-[0_12px_30px_rgba(111,86,143,0.10)]
+                      sm:min-h-[155px]
                     "
                     initial={{
-                      opacity: 0.4,
-                      scale: 0.92,
+                      opacity: 0,
+                      y: 20,
                     }}
-                    animate={{
+                    whileInView={{
                       opacity: 1,
-                      scale: 1,
+                      y: 0,
                     }}
                     transition={{
-                      duration: 0.25,
+                      duration: 0.6,
+                      delay: indice * 0.1,
+                    }}
+                    viewport={{
+                      once: true,
+                    }}
+                    whileHover={{
+                      y: -5,
                     }}
                   >
-                    {String(valor).padStart(2, "0")}
-                  </motion.span>
+                    {/* Línea rosa superior */}
+                    <div
+                      className="
+                        absolute
+                        inset-x-5
+                        top-0
+                        h-[3px]
+                        rounded-b-full
+                        bg-[#E9B7C7]
+                      "
+                    />
 
-                  {/* LÍNEA */}
-                  <div
-                    className="
-                      contadorXV__unidad-linea
-                      my-4
-                      h-px
-                      w-10
-                      bg-[#C8B6E2]
-                      transition-all
-                      duration-300
-                      group-hover:w-14
-                    "
-                  />
+                    {/* Adorno de plata */}
+                    <div
+                      className="
+                        absolute
+                        right-3
+                        top-3
+                        h-4
+                        w-4
+                        rounded-full
+                        border
+                        border-[#C9C9CF]
+                        opacity-50
+                      "
+                    />
 
-                  {/* ETIQUETA */}
-                  <span
-                    className="
-                      contadorXV__unidad-etiqueta
-                      font-playfair
-                      text-[11px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.2em]
-                      text-[#5D4E8C]/80
-                      sm:text-xs
-                    "
-                  >
-                    {etiqueta}
-                  </span>
-                </motion.div>
-              )
-            )}
-          </div>
-        </motion.div>
+                    <motion.span
+                      key={`${etiqueta}-${valor}`}
+                      className="
+                        font-playfair
+                        text-4xl
+                        font-medium
+                        tabular-nums
+                        text-[#6F568F]
+                        sm:text-5xl
+                        md:text-6xl
+                      "
+                      initial={{
+                        opacity: 0.45,
+                        scale: 0.94,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                      }}
+                      transition={{
+                        duration: 0.25,
+                      }}
+                    >
+                      {String(valor).padStart(2, "0")}
+                    </motion.span>
+
+                    <div
+                      className="
+                        my-3
+                        h-px
+                        w-10
+                        bg-[#E9B7C7]
+                        transition-all
+                        duration-300
+                        group-hover:w-14
+                      "
+                    />
+
+                    <span
+                      className="
+                        font-playfair
+                        text-[10px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.16em]
+                        text-[#6F568F]/80
+                        sm:text-xs
+                      "
+                    >
+                      {etiqueta}
+                    </span>
+                  </motion.div>
+                )
+              )}
+            </div>
+          </motion.div>
+
+          {/* Frase final */}
+          <motion.div
+            className="
+              relative
+              mt-10
+              text-center
+            "
+            initial={{
+              opacity: 0,
+            }}
+            whileInView={{
+              opacity: 1,
+            }}
+            transition={{
+              duration: 0.9,
+              delay: 0.35,
+            }}
+            viewport={{
+              once: true,
+            }}
+          >
+            <p
+              className="
+                font-cursiveDancing
+                text-3xl
+                text-[#C98DA3]
+                sm:text-4xl
+              "
+            >
+              {frase}
+            </p>
+
+            <div
+              className="
+                mx-auto
+                mt-5
+                flex
+                items-center
+                justify-center
+                gap-3
+              "
+            >
+              <span className="h-px w-12 bg-[#C9C9CF]" />
+
+              <Sparkles
+                size={17}
+                strokeWidth={1.2}
+                className="text-[#B9A2D8]"
+              />
+
+              <span className="h-px w-12 bg-[#C9C9CF]" />
+            </div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
