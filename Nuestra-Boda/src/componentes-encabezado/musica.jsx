@@ -1,72 +1,175 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Crown,
+  Heart,
   Music2,
   Pause,
   Play,
   Sparkles,
   Volume2,
   VolumeX,
-  X,
 } from "lucide-react";
 
-export default function MusicaXV() {
+export default function MusicaXV({
+  nombre = "Allison",
+  archivo = "/musica.mp3",
+}) {
   const audioRef = useRef(null);
 
-  const [mostrarModal, setMostrarModal] = useState(true);
-  const [reproduciendo, setReproduciendo] = useState(false);
-  const [silenciado, setSilenciado] = useState(false);
-  const [audioListo, setAudioListo] = useState(false);
+  const [mostrarModal, setMostrarModal] =
+    useState(true);
+  const [reproduciendo, setReproduciendo] =
+    useState(false);
+  const [silenciado, setSilenciado] =
+    useState(false);
+  const [audioListo, setAudioListo] =
+    useState(false);
+  const [iniciando, setIniciando] =
+    useState(false);
+  const [errorAudio, setErrorAudio] =
+    useState("");
 
+  /* Precarga anticipada del archivo */
   useEffect(() => {
+    const enlacePrecarga =
+      document.createElement("link");
+
+    enlacePrecarga.rel = "preload";
+    enlacePrecarga.as = "audio";
+    enlacePrecarga.href = archivo;
+
+    document.head.appendChild(enlacePrecarga);
+
     const audio = audioRef.current;
 
-    if (!audio) return;
+    if (!audio) {
+      return () => {
+        enlacePrecarga.remove();
+      };
+    }
 
-    audio.volume = 0.45;
+    audio.preload = "auto";
+    audio.volume = 0.5;
+    audio.load();
 
     const marcarAudioListo = () => {
       setAudioListo(true);
+      setErrorAudio("");
+    };
+
+    const marcarReproduccion = () => {
+      setReproduciendo(true);
+      setIniciando(false);
+      setErrorAudio("");
     };
 
     const marcarPausa = () => {
       setReproduciendo(false);
     };
 
-    const marcarReproduccion = () => {
-      setReproduciendo(true);
+    const mostrarError = () => {
+      setIniciando(false);
+      setReproduciendo(false);
+      setErrorAudio(
+        "No fue posible cargar la música. Intenta nuevamente."
+      );
     };
 
-    audio.addEventListener("canplaythrough", marcarAudioListo);
-    audio.addEventListener("play", marcarReproduccion);
-    audio.addEventListener("pause", marcarPausa);
+    audio.addEventListener(
+      "loadeddata",
+      marcarAudioListo
+    );
+    audio.addEventListener(
+      "canplay",
+      marcarAudioListo
+    );
+    audio.addEventListener(
+      "canplaythrough",
+      marcarAudioListo
+    );
+    audio.addEventListener(
+      "playing",
+      marcarReproduccion
+    );
+    audio.addEventListener(
+      "pause",
+      marcarPausa
+    );
+    audio.addEventListener(
+      "error",
+      mostrarError
+    );
+
+    if (audio.readyState >= 3) {
+      marcarAudioListo();
+    }
 
     return () => {
-      audio.removeEventListener("canplaythrough", marcarAudioListo);
-      audio.removeEventListener("play", marcarReproduccion);
-      audio.removeEventListener("pause", marcarPausa);
-    };
-  }, []);
+      enlacePrecarga.remove();
 
-  const iniciarConMusica = async () => {
+      audio.removeEventListener(
+        "loadeddata",
+        marcarAudioListo
+      );
+      audio.removeEventListener(
+        "canplay",
+        marcarAudioListo
+      );
+      audio.removeEventListener(
+        "canplaythrough",
+        marcarAudioListo
+      );
+      audio.removeEventListener(
+        "playing",
+        marcarReproduccion
+      );
+      audio.removeEventListener(
+        "pause",
+        marcarPausa
+      );
+      audio.removeEventListener(
+        "error",
+        mostrarError
+      );
+    };
+  }, [archivo]);
+
+  const reproducirAudio = async () => {
     const audio = audioRef.current;
 
-    if (!audio) return;
+    if (!audio || iniciando) return;
+
+    setIniciando(true);
+    setErrorAudio("");
 
     try {
       audio.muted = false;
       setSilenciado(false);
 
+      /*
+       * play() se ejecuta directamente dentro del clic.
+       * Si aún falta descargar una parte, el navegador
+       * continuará automáticamente al estar disponible.
+       */
       await audio.play();
 
       setReproduciendo(true);
       setMostrarModal(false);
     } catch (error) {
-      console.error("No se pudo reproducir el audio:", error);
+      console.error(
+        "No se pudo reproducir la música:",
+        error
+      );
 
-      setReproduciendo(false);
-      setMostrarModal(false);
+      setErrorAudio(
+        "No fue posible iniciar la música. Presiona nuevamente."
+      );
+    } finally {
+      setIniciando(false);
     }
   };
 
@@ -79,23 +182,38 @@ export default function MusicaXV() {
 
     setReproduciendo(false);
     setMostrarModal(false);
+    setErrorAudio("");
   };
 
   const alternarReproduccion = async () => {
     const audio = audioRef.current;
 
-    if (!audio) return;
+    if (!audio || iniciando) return;
 
     try {
       if (audio.paused) {
+        setIniciando(true);
+        audio.muted = false;
+        setSilenciado(false);
+
         await audio.play();
+
         setReproduciendo(true);
       } else {
         audio.pause();
         setReproduciendo(false);
       }
     } catch (error) {
-      console.error("No se pudo cambiar la reproducción:", error);
+      console.error(
+        "No se pudo cambiar la reproducción:",
+        error
+      );
+
+      setErrorAudio(
+        "No fue posible reproducir la música."
+      );
+    } finally {
+      setIniciando(false);
     }
   };
 
@@ -112,20 +230,26 @@ export default function MusicaXV() {
 
   return (
     <>
-      {/* AUDIO PRINCIPAL */}
+      {/* Audio precargado */}
       <audio
         ref={audioRef}
-        src="/musica.mp3"
         preload="auto"
         loop
-      />
+        playsInline
+      >
+        <source
+          src={archivo}
+          type="audio/mpeg"
+        />
 
-      {/* VENTANA EMERGENTE */}
+        Tu navegador no puede reproducir este audio.
+      </audio>
+
+      {/* Ventana inicial */}
       <AnimatePresence>
         {mostrarModal && (
           <motion.div
             className="
-              musicaXV__modal-fondo
               fixed
               inset-0
               z-[9999]
@@ -133,23 +257,32 @@ export default function MusicaXV() {
               items-center
               justify-center
               overflow-hidden
-              bg-[#2E2E2E]/75
+              bg-[#4D4352]/75
               px-5
+              py-8
               backdrop-blur-md
             "
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            transition={{
+              duration: 0.45,
+            }}
           >
-            {/* DESTELLOS DECORATIVOS */}
+            {/* Destellos */}
             <motion.div
               className="
-                musicaXV__destello-superior
+                pointer-events-none
                 absolute
                 left-[10%]
                 top-[12%]
-                text-[#F5EBDD]
+                text-[#E9B7C7]
               "
               animate={{
                 opacity: [0.25, 1, 0.25],
@@ -162,16 +295,19 @@ export default function MusicaXV() {
                 ease: "easeInOut",
               }}
             >
-              <Sparkles size={30} strokeWidth={1.4} />
+              <Sparkles
+                size={30}
+                strokeWidth={1.3}
+              />
             </motion.div>
 
             <motion.div
               className="
-                musicaXV__destello-inferior
+                pointer-events-none
                 absolute
-                bottom-[15%]
+                bottom-[14%]
                 right-[10%]
-                text-[#C8B6E2]
+                text-[#C9C9CF]
               "
               animate={{
                 opacity: [0.2, 0.9, 0.2],
@@ -184,28 +320,27 @@ export default function MusicaXV() {
                 ease: "easeInOut",
               }}
             >
-              <Sparkles size={38} strokeWidth={1.3} />
+              <Sparkles
+                size={38}
+                strokeWidth={1.2}
+              />
             </motion.div>
 
-            {/* TARJETA DEL MODAL */}
+            {/* Tarjeta */}
             <motion.div
               className="
-                musicaXV__modal
                 relative
                 w-full
                 max-w-md
                 overflow-hidden
                 rounded-[2.25rem]
                 border
-                border-white/70
-                bg-gradient-to-b
-                from-[#FFFFFF]
-                via-[#F5EBDD]
-                to-[#C8B6E2]
+                border-[#C9C9CF]
+                bg-[#FFF9F4]
                 px-6
                 py-9
                 text-center
-                shadow-[0_30px_90px_rgba(46,36,70,0.45)]
+                shadow-[0_30px_90px_rgba(45,35,49,0.45)]
                 sm:px-9
                 sm:py-11
               "
@@ -225,259 +360,369 @@ export default function MusicaXV() {
                 y: 25,
               }}
               transition={{
-                duration: 0.65,
+                duration: 0.6,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              {/* BRILLOS DE FONDO */}
+              {/* Marco interior plateado */}
               <div
                 className="
-                  musicaXV__brillo-superior
                   pointer-events-none
                   absolute
-                  -right-16
-                  -top-16
-                  h-44
-                  w-44
-                  rounded-full
-                  bg-white/60
-                  blur-3xl
-                "
-              />
-
-              <div
-                className="
-                  musicaXV__brillo-inferior
-                  pointer-events-none
-                  absolute
-                  -bottom-20
-                  -left-16
-                  h-48
-                  w-48
-                  rounded-full
-                  bg-[#5D4E8C]/20
-                  blur-3xl
-                "
-              />
-
-              {/* CORONA */}
-              <motion.div
-                className="
-                  musicaXV__corona
-                  relative
-                  mx-auto
-                  mb-5
-                  flex
-                  h-20
-                  w-20
-                  items-center
-                  justify-center
-                  rounded-full
+                  inset-2
+                  rounded-[1.9rem]
                   border
-                  border-[#5D4E8C]/20
-                  bg-white/65
-                  text-[#5D4E8C]
-                  shadow-[0_12px_35px_rgba(93,78,140,0.18)]
-                  backdrop-blur-md
+                  border-[#E9B7C7]/65
                 "
-                animate={{
-                  y: [0, -5, 0],
-                  rotate: [0, 2, 0, -2, 0],
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                <Crown size={38} strokeWidth={1.35} />
+              />
 
-                <motion.span
-                  className="
-                    musicaXV__corona-destello
-                    absolute
-                    right-2
-                    top-1
-                    text-[#5D4E8C]
-                  "
-                  animate={{
-                    opacity: [0, 1, 0],
-                    scale: [0.5, 1.2, 0.5],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                  }}
-                >
-                  <Sparkles size={17} />
-                </motion.span>
-              </motion.div>
-
-              {/* TEXTO */}
-              <p
-                className="
-                  musicaXV__etiqueta
-                  relative
-                  mb-3
-                  font-playfair
-                  text-xs
-                  uppercase
-                  tracking-[0.38em]
-                  text-[#5D4E8C]/75
-                  sm:text-sm
-                "
-              >
-                Mis XV años
-              </p>
-
-              <h2
-                className="
-                  musicaXV__titulo
-                  relative
-                  font-cursiveDancing
-                  text-5xl
-                  leading-none
-                  text-[#5D4E8C]
-                  sm:text-6xl
-                "
-              >
-                Allison
-              </h2>
-
+              {/* Detalle superior */}
               <div
                 className="
-                  musicaXV__separador
-                  relative
-                  mx-auto
-                  my-6
-                  flex
-                  items-center
-                  justify-center
-                  gap-3
+                  absolute
+                  left-1/2
+                  top-0
+                  h-1
+                  w-28
+                  -translate-x-1/2
+                  rounded-b-full
+                  bg-[#C9C9CF]
                 "
-              >
-                <span className="h-px w-14 bg-[#5D4E8C]/30" />
+              />
 
-                <Music2
-                  size={19}
-                  strokeWidth={1.5}
-                  className="text-[#5D4E8C]"
-                />
-
-                <span className="h-px w-14 bg-[#5D4E8C]/30" />
-              </div>
-
-              <p
-                className="
-                  musicaXV__descripcion
-                  relative
-                  mx-auto
-                  max-w-sm
-                  font-playfair
-                  text-base
-                  leading-relaxed
-                  text-[#2E2E2E]/80
-                  sm:text-lg
-                "
-              >
-                Esta celebración tiene una melodía especial.
-                Acompáñame a vivir este momento con música.
-              </p>
-
-              {/* BOTONES */}
-              <div
-                className="
-                  musicaXV__acciones
-                  relative
-                  mt-8
-                  flex
-                  flex-col
-                  gap-3
-                "
-              >
-                <motion.button
-                  type="button"
-                  onClick={iniciarConMusica}
-                  disabled={!audioListo}
+              <div className="relative z-10">
+                {/* Ícono musical */}
+                <motion.div
                   className="
-                    musicaXV__boton-principal
+                    relative
+                    mx-auto
+                    mb-5
                     flex
-                    w-full
+                    h-20
+                    w-20
                     items-center
                     justify-center
-                    gap-3
-                    rounded-full
-                    bg-[#5D4E8C]
-                    px-6
-                    py-4
-                    font-playfair
-                    text-sm
-                    uppercase
-                    tracking-[0.18em]
-                    text-white
-                    shadow-[0_14px_35px_rgba(93,78,140,0.35)]
-                    transition
-                    duration-300
-                    hover:bg-[#4C3F77]
-                    disabled:cursor-not-allowed
-                    disabled:opacity-60
-                    sm:text-base
-                  "
-                  whileHover={{ scale: 1.025 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  <Play size={19} fill="currentColor" />
-
-                  {audioListo
-                    ? "Entrar con música"
-                    : "Preparando música..."}
-                </motion.button>
-
-                <motion.button
-                  type="button"
-                  onClick={continuarSinMusica}
-                  className="
-                    musicaXV__boton-secundario
-                    flex
-                    w-full
-                    items-center
-                    justify-center
-                    gap-3
                     rounded-full
                     border
-                    border-[#5D4E8C]/25
-                    bg-white/55
-                    px-6
-                    py-3.5
-                    font-playfair
-                    text-sm
-                    uppercase
-                    tracking-[0.15em]
-                    text-[#5D4E8C]
-                    backdrop-blur-md
-                    transition
-                    duration-300
-                    hover:bg-white/80
+                    border-[#C9C9CF]
+                    bg-[#F7E6EC]
+                    text-[#C98DA3]
+                    shadow-[0_12px_35px_rgba(201,141,163,0.20)]
                   "
-                  whileHover={{ scale: 1.015 }}
-                  whileTap={{ scale: 0.98 }}
+                  animate={{
+                    y: [0, -5, 0],
+                    rotate: [0, 2, 0, -2, 0],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                 >
-                  <VolumeX size={18} />
+                  <Music2
+                    size={37}
+                    strokeWidth={1.35}
+                  />
 
-                  Continuar sin música
-                </motion.button>
+                  <motion.span
+                    className="
+                      absolute
+                      -right-1
+                      top-0
+                      text-[#C9C9CF]
+                    "
+                    animate={{
+                      opacity: [0, 1, 0],
+                      scale: [0.5, 1.2, 0.5],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                    }}
+                  >
+                    <Sparkles size={18} />
+                  </motion.span>
+                </motion.div>
+
+                <p
+                  className="
+                    font-playfair
+                    text-xs
+                    uppercase
+                    tracking-[0.38em]
+                    text-[#9B7885]
+                    sm:text-sm
+                  "
+                >
+                  Mis XV años
+                </p>
+
+                <h2
+                  className="
+                    mt-3
+                    font-cursiveDancing
+                    text-5xl
+                    leading-none
+                    text-[#C98DA3]
+                    sm:text-6xl
+                  "
+                >
+                  {nombre}
+                </h2>
+
+                {/* Separador */}
+                <div
+                  className="
+                    mx-auto
+                    my-6
+                    flex
+                    items-center
+                    justify-center
+                    gap-3
+                  "
+                >
+                  <span
+                    className="
+                      h-px
+                      w-14
+                      bg-[#C9C9CF]
+                    "
+                  />
+
+                  <Heart
+                    size={17}
+                    strokeWidth={1.3}
+                    className="
+                      fill-[#E9B7C7]/40
+                      text-[#C98DA3]
+                    "
+                  />
+
+                  <span
+                    className="
+                      h-px
+                      w-14
+                      bg-[#C9C9CF]
+                    "
+                  />
+                </div>
+
+                <p
+                  className="
+                    mx-auto
+                    max-w-sm
+                    font-playfair
+                    text-base
+                    leading-relaxed
+                    text-[#554B5E]/80
+                    sm:text-lg
+                  "
+                >
+                  Esta celebración tiene una melodía
+                  especial. Acompáñame a vivir este momento
+                  con música.
+                </p>
+
+                {/* Estado de precarga */}
+                <div
+                  className="
+                    mt-5
+                    flex
+                    items-center
+                    justify-center
+                    gap-2
+                    font-playfair
+                    text-xs
+                    text-[#9B7885]
+                  "
+                >
+                  <span
+                    className={`
+                      h-2
+                      w-2
+                      rounded-full
+                      ${
+                        audioListo
+                          ? "bg-[#8BA17F]"
+                          : "animate-pulse bg-[#C9C9CF]"
+                      }
+                    `}
+                  />
+
+                  {audioListo
+                    ? "Música preparada"
+                    : "Precargando música..."}
+                </div>
+
+                {/* Error */}
+                <AnimatePresence>
+                  {errorAudio && (
+                    <motion.p
+                      role="alert"
+                      className="
+                        mt-4
+                        rounded-xl
+                        border
+                        border-[#C98DA3]/35
+                        bg-[#F7E6EC]
+                        px-4
+                        py-3
+                        font-playfair
+                        text-sm
+                        text-[#854D62]
+                      "
+                      initial={{
+                        opacity: 0,
+                        y: -8,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      exit={{
+                        opacity: 0,
+                        y: -8,
+                      }}
+                    >
+                      {errorAudio}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+
+                {/* Botones */}
+                <div
+                  className="
+                    mt-7
+                    flex
+                    flex-col
+                    gap-3
+                  "
+                >
+                  <motion.button
+                    type="button"
+                    onClick={reproducirAudio}
+                    disabled={iniciando}
+                    className="
+                      flex
+                      w-full
+                      items-center
+                      justify-center
+                      gap-3
+                      rounded-full
+                      border
+                      border-[#C9C9CF]
+                      bg-[#C98DA3]
+                      px-6
+                      py-4
+                      font-playfair
+                      text-sm
+                      uppercase
+                      tracking-[0.15em]
+                      text-white
+                      shadow-[0_14px_35px_rgba(201,141,163,0.32)]
+                      transition
+                      duration-300
+                      hover:bg-[#B97991]
+                      disabled:cursor-wait
+                      disabled:opacity-70
+                      sm:text-base
+                    "
+                    whileHover={
+                      iniciando
+                        ? {}
+                        : {
+                            scale: 1.025,
+                          }
+                    }
+                    whileTap={
+                      iniciando
+                        ? {}
+                        : {
+                            scale: 0.97,
+                          }
+                    }
+                  >
+                    {iniciando ? (
+                      <>
+                        <motion.span
+                          className="
+                            h-5
+                            w-5
+                            rounded-full
+                            border-2
+                            border-white/35
+                            border-t-white
+                          "
+                          animate={{
+                            rotate: 360,
+                          }}
+                          transition={{
+                            duration: 0.8,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                        />
+
+                        Iniciando música...
+                      </>
+                    ) : (
+                      <>
+                        <Play
+                          size={19}
+                          fill="currentColor"
+                        />
+
+                        Entrar con música
+                      </>
+                    )}
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
+                    onClick={continuarSinMusica}
+                    className="
+                      flex
+                      w-full
+                      items-center
+                      justify-center
+                      gap-3
+                      rounded-full
+                      border
+                      border-[#C9C9CF]
+                      bg-white
+                      px-6
+                      py-3.5
+                      font-playfair
+                      text-sm
+                      uppercase
+                      tracking-[0.13em]
+                      text-[#9B7885]
+                      transition
+                      duration-300
+                      hover:bg-[#F7E6EC]
+                    "
+                    whileHover={{
+                      scale: 1.015,
+                    }}
+                    whileTap={{
+                      scale: 0.98,
+                    }}
+                  >
+                    <VolumeX size={18} />
+                    Continuar sin música
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* CONTROLES FLOTANTES */}
+      {/* Controles flotantes */}
       <AnimatePresence>
         {!mostrarModal && (
           <motion.div
             className="
-              musicaXV__controles
               fixed
               bottom-5
               right-4
@@ -504,11 +749,10 @@ export default function MusicaXV() {
               scale: 0.85,
             }}
             transition={{
-              duration: 0.5,
-              ease: "easeOut",
+              duration: 0.45,
             }}
           >
-            {/* SILENCIAR */}
+            {/* Volumen */}
             <motion.button
               type="button"
               onClick={alternarSilencio}
@@ -518,7 +762,6 @@ export default function MusicaXV() {
                   : "Silenciar música"
               }
               className="
-                musicaXV__boton-volumen
                 flex
                 h-11
                 w-11
@@ -526,14 +769,18 @@ export default function MusicaXV() {
                 justify-center
                 rounded-full
                 border
-                border-white/60
-                bg-[#F5EBDD]/90
-                text-[#5D4E8C]
-                shadow-[0_8px_25px_rgba(46,46,46,0.18)]
+                border-[#C9C9CF]
+                bg-[#FFF9F4]/95
+                text-[#C98DA3]
+                shadow-[0_8px_25px_rgba(46,46,46,0.20)]
                 backdrop-blur-md
               "
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.92 }}
+              whileHover={{
+                scale: 1.08,
+              }}
+              whileTap={{
+                scale: 0.92,
+              }}
             >
               {silenciado ? (
                 <VolumeX size={19} />
@@ -542,43 +789,47 @@ export default function MusicaXV() {
               )}
             </motion.button>
 
-            {/* REPRODUCIR / PAUSAR */}
+            {/* Reproducir o pausar */}
             <motion.button
               type="button"
               onClick={alternarReproduccion}
+              disabled={iniciando}
               aria-label={
                 reproduciendo
                   ? "Pausar música"
                   : "Reproducir música"
               }
               className="
-                musicaXV__boton-reproduccion
                 relative
                 flex
                 h-14
                 w-14
                 items-center
                 justify-center
-                overflow-hidden
                 rounded-full
                 border
-                border-white/50
-                bg-[#5D4E8C]
+                border-[#C9C9CF]
+                bg-[#C98DA3]
                 text-white
-                shadow-[0_12px_30px_rgba(93,78,140,0.4)]
+                shadow-[0_12px_30px_rgba(201,141,163,0.42)]
+                disabled:cursor-wait
+                disabled:opacity-70
               "
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.92 }}
+              whileHover={{
+                scale: 1.08,
+              }}
+              whileTap={{
+                scale: 0.92,
+              }}
             >
               {reproduciendo && (
                 <motion.span
                   className="
-                    musicaXV__pulso
                     absolute
                     inset-0
                     rounded-full
                     border
-                    border-[#C8B6E2]
+                    border-[#E9B7C7]
                   "
                   animate={{
                     scale: [1, 1.65],
@@ -593,8 +844,31 @@ export default function MusicaXV() {
               )}
 
               <span className="relative z-10">
-                {reproduciendo ? (
-                  <Pause size={22} fill="currentColor" />
+                {iniciando ? (
+                  <motion.span
+                    className="
+                      block
+                      h-5
+                      w-5
+                      rounded-full
+                      border-2
+                      border-white/35
+                      border-t-white
+                    "
+                    animate={{
+                      rotate: 360,
+                    }}
+                    transition={{
+                      duration: 0.8,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                ) : reproduciendo ? (
+                  <Pause
+                    size={22}
+                    fill="currentColor"
+                  />
                 ) : (
                   <Play
                     size={22}

@@ -12,7 +12,7 @@ const Regalos = ({
   titulo = "Sugerencia de regalo",
   opcion = "Lluvia de sobres",
   mensaje = "Tu presencia es el regalo más importante para mí. Será muy especial compartir contigo esta noche llena de magia y alegría.",
-  mensajeSecundario = "Si deseas obsequiarme un detalle, puedes hacerlo mediante la tradicional lluvia de sobres depositando tu presenten.  efectivo.",
+  mensajeSecundario = "Si deseas obsequiarme un detalle, puedes hacerlo mediante la tradicional lluvia de sobres depositando tu presenten en efectivo.",
 }) => {
   return (
     <section

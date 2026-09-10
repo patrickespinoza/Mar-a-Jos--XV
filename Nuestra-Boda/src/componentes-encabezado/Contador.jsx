@@ -5,7 +5,6 @@ import { Heart, Leaf, Sparkles } from "lucide-react";
 const Contador = ({
   titulo = "Faltan",
   texto = "Hay momentos que se sueñan toda la vida, y para mí será muy especial compartir este día contigo.",
-  frase = "La magia está por comenzar",
   fecha = "2026-10-30T19:30:00",
 }) => {
   const calcularTiempo = () => {
@@ -529,59 +528,6 @@ const Contador = ({
             </div>
           </motion.div>
 
-          {/* Frase final */}
-          <motion.div
-            className="
-              relative
-              mt-10
-              text-center
-            "
-            initial={{
-              opacity: 0,
-            }}
-            whileInView={{
-              opacity: 1,
-            }}
-            transition={{
-              duration: 0.9,
-              delay: 0.35,
-            }}
-            viewport={{
-              once: true,
-            }}
-          >
-            <p
-              className="
-                font-cursiveDancing
-                text-3xl
-                text-[#C98DA3]
-                sm:text-4xl
-              "
-            >
-              {frase}
-            </p>
-
-            <div
-              className="
-                mx-auto
-                mt-5
-                flex
-                items-center
-                justify-center
-                gap-3
-              "
-            >
-              <span className="h-px w-12 bg-[#C9C9CF]" />
-
-              <Sparkles
-                size={17}
-                strokeWidth={1.2}
-                className="text-[#B9A2D8]"
-              />
-
-              <span className="h-px w-12 bg-[#C9C9CF]" />
-            </div>
-          </motion.div>
         </div>
       </div>
     </section>
