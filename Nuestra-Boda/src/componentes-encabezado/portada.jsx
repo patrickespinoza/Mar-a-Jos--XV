@@ -6,7 +6,7 @@ export default function Portada() {
       {/* Imagen de portada */}
       <img
         src="/portada.jpg"
-        alt="María José Guajardo de la Rosa"
+        alt="María José "
         className="
           portadaXV__imagen
           absolute

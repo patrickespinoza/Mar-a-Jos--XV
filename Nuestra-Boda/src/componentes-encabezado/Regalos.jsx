@@ -10,9 +10,7 @@ import {
 
 const Regalos = ({
   titulo = "Sugerencia de regalo",
-  opcion = "Lluvia de sobres",
   mensaje = "Tu presencia es el regalo más importante para mí. Será muy especial compartir contigo esta noche llena de magia y alegría.",
-  mensajeSecundario = "Si deseas obsequiarme un detalle, puedes hacerlo mediante la tradicional lluvia de sobres depositando tu presenten en efectivo.",
 }) => {
   return (
     <section
@@ -591,17 +589,6 @@ const Regalos = ({
               Detalle especial
             </p>
 
-            <h3
-              className="
-                mt-3
-                font-cursiveDancing
-                text-4xl
-                text-[#6F568F]
-                sm:text-5xl
-              "
-            >
-              {opcion}
-            </h3>
 
             <div
               className="
@@ -613,19 +600,6 @@ const Regalos = ({
               "
             />
 
-            <p
-              className="
-                mx-auto
-                max-w-lg
-                font-playfair
-                text-base
-                leading-8
-                text-[#554B5E]/80
-                sm:text-lg
-              "
-            >
-              {mensajeSecundario}
-            </p>
 
             {/* Sobre decorativo */}
             <motion.div

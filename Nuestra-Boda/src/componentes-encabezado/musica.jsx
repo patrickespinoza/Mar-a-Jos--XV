@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function MusicaXV({
-  nombre = "Allison",
+  nombre = "María José",
   archivo = "/musica.mp3",
 }) {
   const audioRef = useRef(null);
