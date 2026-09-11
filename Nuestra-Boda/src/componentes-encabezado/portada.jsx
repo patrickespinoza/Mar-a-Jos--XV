@@ -94,7 +94,7 @@ export default function Portada() {
             lg:text-[6rem]
           "
         >
-          María José Guajardo de la Rosa
+          María José
         </h1>
 
         <div
